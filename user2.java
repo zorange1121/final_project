@@ -2,6 +2,7 @@ package com.example;
 
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Scanner;
 import org.eclipse.paho.client.mqttv3.*;
 
@@ -15,10 +16,8 @@ public class test3 {
     private static final int QOS = 0;
 
     public static void main(String[] args) {
-        // 启动订阅线程
         new Thread(new MqttSubscriber()).start();
 
-        // 启动发布功能
         publish();
     }
 
@@ -32,7 +31,8 @@ public class test3 {
             options.setKeepAliveInterval(60);
 
             client.connect(options);
-            Scanner scanner = new Scanner(System.in);
+            Scanner scanner = new Scanner(System.in,"Big5");
+            System.out.println("請輸入");
 
             while (true) {
                 System.out.println("Enter content to publish:");
@@ -40,13 +40,17 @@ public class test3 {
                 if (content.equals("-1")) {
                     break;
                 }
-
-                MqttMessage message = new MqttMessage(content.getBytes());
-                message.setQos(QOS);
-                client.publish(PUBLISH_TOPIC, message);
+                try {
+                    MqttMessage message = new MqttMessage(content.getBytes("Big5"));
+                    message.setQos(QOS);
+                    client.publish(PUBLISH_TOPIC, message);
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
                 System.out.println("Message published");
                 System.out.println("publish topic: " + PUBLISH_TOPIC);
                 System.out.println("publish message content: " + content);
+                //System.out.println(content);
             }
 
             client.disconnect();
@@ -77,7 +81,14 @@ public class test3 {
                     public void messageArrived(String topic, MqttMessage message) {
                         System.out.println("Message received");
                         System.out.println("receive topic: " + topic);
-                        System.out.println("receive message content: " + new String(message.getPayload()));
+                        String apple="";
+                        try {
+                            apple = new String(message.getPayload(), "Big5");
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println("receive message content: " + apple);
+
                     }
 
                     @Override
@@ -89,7 +100,6 @@ public class test3 {
                 client.connect(options);
                 client.subscribe(SUBSCRIBE_TOPIC, QOS);
 
-                // 保持订阅直到程序结束
                 Thread.sleep(Long.MAX_VALUE);
             } catch (Exception e) {
                 e.printStackTrace();
