@@ -49,8 +49,6 @@ table {
 
 body{   
     background-color: #e4dfe1;
-    font-family: "Times New Roman", Georgia, Serif;
-
 }
 .top{
     background-color: #5c6878;
@@ -91,7 +89,6 @@ body{
 }
 
 .bottom input{
-    margin-top:10px;
     margin-left:30px;
     margin-bottom: 10px; 
     width : 200px;
@@ -100,4 +97,22 @@ body{
 .bottom button{
     margin-right:30px;
     margin-bottom: 10px; 
+}
+.messagelist{
+    list-style-type: none;
+    padding: 40px;
+    height:250px;
+    overflow: scroll;
+}
+.message {
+    margin-bottom: 10px;
+    color: #686f74;
+    float: right;
+    clear: both;
+}
+.textbox {
+    display: inline-block;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
 }
