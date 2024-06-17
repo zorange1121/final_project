@@ -1,4 +1,4 @@
-package com.example.mqttdemo.config;
+package com.example.subscribe.config;
 
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.context.annotation.Bean;
@@ -7,11 +7,12 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
 import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
-import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
+import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.integration.mqtt.support.MqttMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class MqttConfig {
@@ -26,21 +27,41 @@ public class MqttConfig {
     }
 
     @Bean
-    public MessageChannel mqttOutboundChannel() {
+    public MessageChannel mqttInputChannel() {
         return new DirectChannel();
     }
 
     @Bean
-    @ServiceActivator(inputChannel = "mqttOutboundChannel")
-    public MessageHandler mqttOutbound() {
-        MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler("mqttPublisherClient", mqttClientFactory());
-        messageHandler.setAsync(true);
-        messageHandler.setDefaultTopic("test");
-        return messageHandler;
+    public MqttPahoMessageDrivenChannelAdapter inbound() {
+        MqttPahoMessageDrivenChannelAdapter adapter =
+                new MqttPahoMessageDrivenChannelAdapter("mqttSubscriberClient2", mqttClientFactory(), "test");
+        adapter.setOutputChannel(mqttInputChannel());
+        adapter.setConverter(mqttMessageConverter());
+        return adapter;
+    }
+
+    @Bean
+    @ServiceActivator(inputChannel = "mqttInputChannel")
+    public MessageHandler handler(RestTemplate restTemplate) {
+        return message -> {
+            // 接收訂閱主題的原始訊息
+            String encryptedMessage = message.getPayload().toString();
+            System.out.println("Received encrypted message: " + encryptedMessage);
+            // 呼叫API解密 解密訊息:decryptedMessage
+            String decryptedMessage = restTemplate.getForObject(
+                    "http://localhost:8080/decrypt?encryptedMessage=" + encryptedMessage, String.class);
+
+            System.out.println("Decrypted message: " + decryptedMessage);
+        };
     }
 
     @Bean
     public MqttMessageConverter mqttMessageConverter() {
         return new DefaultPahoMessageConverter();
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }

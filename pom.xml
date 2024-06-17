@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
-    <artifactId>mqtt-demo</artifactId>
+    <artifactId>Subscribe</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>mqtt-demo</name>
-    <description>mqtt-demo</description>
+    <name>Subscribe</name>
+    <description>Subscribe</description>
     <properties>
         <java.version>17</java.version>
     </properties>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.15</version> <!-- 確保使用最新版本 -->
+            <version>1.15</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -36,6 +36,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
 
     <build>
         <plugins>
