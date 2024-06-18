@@ -54,30 +54,45 @@ function fetchStringFromBackend() {
 //     }
 // });
 
+
+function fetchStringFromBackend() {
+    return fetch('/get') 
+        .then(response => response.text())
+        .catch(error => {
+            console.error('Error fetching string from backend:', error);
+            return null;
+        });
+}
+
 function get() {
     try {
         fetchStringFromBackend().then(result => {
             if (result !== null) {
                 console.log('Received string from backend:', result);
-                if(result!==""){
-                    var listItem = document.createElement('li');
-                    var currentTime = new Date();
-                    var hours = currentTime.getHours();
-                    var minutes = currentTime.getMinutes(); 
-                    var timeString = hours + ":" + (minutes < 10 ? "0" + minutes : minutes);
-                    listItem.className = "message";
-                    listItem.innerHTML = timeString+"  "+"<span class='textbox'><p>"+result+"</p></span>";
-                    list.appendChild(listItem);
+                if(result !== ""){
+                    var list = document.getElementById('messagelist'); 
+                    if (list) { 
+                        var listItem = document.createElement('li');
+                        var currentTime = new Date();
+                        var hours = currentTime.getHours();
+                        var minutes = currentTime.getMinutes(); 
+                        var timeString = hours + ":" + (minutes < 10 ? "0" + minutes : minutes);
+                        listItem.className = "message_re";
+                        listItem.innerHTML ="<span class='textbox'><p>" + result + "</p></span>"+"  "+timeString;
+                        list.appendChild(listItem);
+                    } else {
+                        console.error('List element not found');
+                    }
                 }
             }
         });
     } catch (error) {
-       // console.error('There was a problem with the fetch operation:', error);
+       console.error('There was a problem with the fetch operation:', error);
     }
-
-
 }
+
 setInterval(get, 500);
+
 
 // document.getElementById("send").addEventListener('click', () => {
 //     const content = document.getElementById("message").value; // 這是你要發送的參數值
