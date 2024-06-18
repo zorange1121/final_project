@@ -1,21 +1,22 @@
 package com.example.demo;
 
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-
-import java.io.UnsupportedEncodingException;
 import org.eclipse.paho.client.mqttv3.*;
 
-public  class MqttSubscriber implements Runnable {
-    private  String BROKER = "tcp://broker.emqx.io:1883";
-    private  String SUBSCRIBE_TOPIC = "userfour";
-    private  String PUBLISH_TOPIC = "userthree";
-    private  String USERNAME = "userthree";
-    private  String PASSWORD = "public";
-    private  int QOS = 0;
-    String apple="";
+import java.io.UnsupportedEncodingException;
+import java.util.concurrent.atomic.AtomicReference;
 
-    @Override
-    public void run() {
+public class MqttSubscriber implements MqttCallback {
+    private static final String BROKER = "tcp://broker.emqx.io:1883";
+    private static final String SUBSCRIBE_TOPIC = "userfour";
+    private static final String USERNAME = "userthree";
+    private static final String PASSWORD = "public";
+    private static final int QOS = 0;
+
+    private static MqttSubscriber instance;
+    private final AtomicReference<String> apple = new AtomicReference<>("");
+
+    private MqttSubscriber() {
         try {
             MqttClient client = new MqttClient(BROKER, MqttClient.generateClientId(), new MemoryPersistence());
             MqttConnectOptions options = new MqttConnectOptions();
@@ -24,44 +25,49 @@ public  class MqttSubscriber implements Runnable {
             options.setConnectionTimeout(60);
             options.setKeepAliveInterval(60);
 
-            client.setCallback(new MqttCallback() {
-                @Override
-                public void connectionLost(Throwable cause) {
-                    System.out.println("Connection lost: " + cause.getMessage());
-                }
-
-                @Override
-                public void messageArrived(String topic, MqttMessage message) {
-                    System.out.println("Message received");
-                    System.out.println("receive topic: " + topic);
-                    apple="";
-                    try {
-                        apple = new String(message.getPayload(), "Big5");
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
-                    System.out.println("receive message content: " + apple);
-
-                }
-
-                @Override
-                public void deliveryComplete(IMqttDeliveryToken token) {
-                    System.out.println("deliveryComplete---------" + token.isComplete());
-                }
-            });
-
+            client.setCallback(this);
             client.connect(options);
             client.subscribe(SUBSCRIBE_TOPIC, QOS);
-
-            Thread.sleep(Long.MAX_VALUE);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    public String geString(){
-        return apple;
+
+    public static MqttSubscriber getInstance() {
+        if (instance == null) {
+            synchronized (MqttSubscriber.class) {
+                if (instance == null) {
+                    instance = new MqttSubscriber();
+                }
+            }
+        }
+        return instance;
     }
-    public void setString(){
-        apple="";
+
+    public String getMessage() {
+        return apple.getAndSet("");
+    }
+
+    @Override
+    public void connectionLost(Throwable cause) {
+        System.out.println("Connection lost: " + cause.getMessage());
+    }
+
+    @Override
+    public void messageArrived(String topic, MqttMessage message) {
+        System.out.println("Message received");
+        System.out.println("receive topic: " + topic);
+        try {
+            String payload = new String(message.getPayload(), "Big5");
+            apple.set(payload);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        System.out.println("receive message content: " + apple.get());
+    }
+
+    @Override
+    public void deliveryComplete(IMqttDeliveryToken token) {
+        System.out.println("deliveryComplete---------" + token.isComplete());
     }
 }
