@@ -1,33 +1,26 @@
-package com.example.demo;
+package com.example.mqttdemo.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import com.example.mqttdemo.service.MqttService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
-@Controller
-public class MainController {
+@RestController
+public class MqttController {
 
-    private Mqttuser mqttuser = new Mqttuser();
+    @Autowired
+    private MqttService mqttService;
 
-    @RequestMapping("/MainPage")
-    public String index(@RequestParam(value="title", required=false, defaultValue="") String title, Model model) {
-        model.addAttribute("name", title);
-        return "final";
-    }
-
-    @GetMapping("/post")
-    public void post(@RequestParam String content) {
-        mqttuser.publish(content);
-    }
-
-    @GetMapping("/get")
-    public ResponseEntity<Object> getMsg(){
-        MqttSubscriber mqttSubscriber = new MqttSubscriber();
-        mqttSubscriber.run();
-        String msg=mqttSubscriber.geString();
-        mqttSubscriber.setString();
-        return ResponseEntity.ok(msg);
+    @GetMapping("/send")
+    public String send(@RequestParam String topic, @RequestParam String message) {
+        try {
+            mqttService.sendMessage(topic, message);
+            return "Message sent";
+        } catch (Exception e) {
+            return "Error sending message: " + e.getMessage();
+        }
     }
 }
-
