@@ -80,6 +80,7 @@ function get() {
                         listItem.className = "message_re";
                         listItem.innerHTML ="<span class='textbox'><p>" + result + "</p></span>"+"  "+timeString;
                         list.appendChild(listItem);
+                        list.scrollTop =list.scrollHeight;
                     } else {
                         console.error('List element not found');
                     }
