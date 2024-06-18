@@ -110,6 +110,12 @@ body{
     float: right;
     clear: both;
 }
+.message_re{
+    margin-bottom: 10px;
+    color: #686f74;
+    float: left;
+    clear: both;
+}
 .textbox {
     display: inline-block;
     padding: 10px;
