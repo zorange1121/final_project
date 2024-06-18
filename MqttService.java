@@ -18,18 +18,16 @@ public class MqttService {
     // 寄訊息
     public void sendMessage(String topic, String message) throws Exception {
         String encryptedMessage = CryptoUtil.encrypt(message, secretKey);
+        System.out.println("System_Log : 加密訊息:"+ encryptedMessage);
         try {
             mqttOutboundChannel.send(MessageBuilder.withPayload(encryptedMessage)
                     .setHeader("mqtt_topic", topic)
                     .build());
         }
         catch (MessageHandlingException e){
-            System.out.println("Message handling exception"+e.getMessage());
+            System.out.println("Message handling exception: " + e.getMessage());
             e.printStackTrace();
         }
     }
-    // 解密
-    public String decryptMessage(String encryptedMessage) throws Exception {
-        return CryptoUtil.decrypt(encryptedMessage, secretKey);
-    }
+
 }
